@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  password  String
+  number    String?
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  quantity           Int                 @default(0)
+  Category           Category?           @relation(fields: [categoryId], references: [id])
+  categoryId         String?             @db.ObjectId
+  purchaseOrderItems PurchaseOrderItem[]
+  salesOrderItems    SalesOrderItem[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
+
+model EmailOTP {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  otp       String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model PurchaseOrder {
+  id        String              @id @default(auto()) @map("_id") @db.ObjectId
+  items     PurchaseOrderItem[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrderId String        @db.ObjectId
+  product         Product       @relation(fields: [productId], references: [id])
+  productId       String        @db.ObjectId
+  quantity        Int
+}
+
+model Party {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  contactNumber String
+  salesOrders   SalesOrder[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model SalesOrder {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  items          SalesOrderItem[]
+  dispatchOrders DispatchOrder[]
+  party          Party?          @relation(fields: [partyId], references: [id])
+  partyId        String?         @db.ObjectId
+  isDispatched   Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model SalesOrderItem {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id])
+  salesOrderId String     @db.ObjectId
+  product      Product    @relation(fields: [productId], references: [id])
+  productId    String     @db.ObjectId
+  quantity     Int
+}
+
+model DispatchOrder {
+  id           String              @id @default(auto()) @map("_id") @db.ObjectId
+  salesOrder   SalesOrder          @relation(fields: [salesOrderId], references: [id])
+  salesOrderId String              @db.ObjectId
+  items        DispatchOrderItem[]
+  isCompleted  Boolean             @default(false)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+}
+
+model DispatchOrderItem {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  dispatchOrder   DispatchOrder @relation(fields: [dispatchOrderId], references: [id])
+  dispatchOrderId String        @db.ObjectId
+  productId       String        @db.ObjectId
+  productName     String
+  quantity        Int
+}

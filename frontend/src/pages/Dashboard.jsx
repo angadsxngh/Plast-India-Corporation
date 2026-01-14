@@ -1,0 +1,245 @@
+import React from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Package,
+  Users,
+  TrendingUp,
+  ShoppingCart,
+  LogOut,
+  Bell,
+  Settings,
+  BarChart3,
+  FileText,
+  Box,
+  Tag,
+  List,
+  ClipboardList,
+  Truck,
+  UserPlus,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useUser } from "../context/UserContext";
+
+function Dashboard() {
+  const navigate = useNavigate();
+  const { user, categories, products, purchaseOrders, salesOrders } = useUser();
+
+
+  const handleLogout = async () => {
+    try {
+  
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/logout`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      if (response.ok) {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  const stats = [
+    {
+      title: "Total Products",
+      value: products.length,
+      icon: Package,
+      color: "bg-blue-100 text-blue-600",
+    },
+    {
+      title: "Total Categories",
+      value: categories.length,
+      icon: Tag,
+      color: "bg-green-100 text-green-600",
+    },
+    {
+      title: "Purchase Orders",
+      value: purchaseOrders.length,
+      icon: ShoppingCart,
+      color: "bg-purple-100 text-purple-600",
+    },
+    {
+      title: "Sales Orders",
+      value: salesOrders.length,
+      icon: TrendingUp,
+      color: "bg-yellow-100 text-yellow-600",
+    },
+    // {
+    //   title: "Dispatch Orders",
+    //   value: "₹45.2Cr",
+    //   icon: TrendingUp,
+    //   color: "bg-yellow-100 text-yellow-600",
+    // },
+  ];
+
+  const recentActivities = [
+    { action: "New order placed", time: "5 minutes ago", type: "order" },
+    { action: "Product inventory updated", time: "1 hour ago", type: "product" },
+    { action: "New user registered", time: "2 hours ago", type: "user" },
+    { action: "Payment received", time: "3 hours ago", type: "payment" },
+    { action: "Report generated", time: "5 hours ago", type: "report" },
+  ];
+
+  const quickActions = [
+    { name: "Add Product", icon: Package, href: "/add-product" },
+    { name: "Add Party", icon: UserPlus, href: "/add-party" },
+    { name: "Purchase Order", icon: ShoppingCart, href: "/purchase-order" },
+    { name: "Sales Order", icon: FileText, href: "/sales-order" },
+    { name: "Add Category", icon: Tag, href: "/add-category" },
+    { name: "View Purchase Orders", icon: List, href: "/view-purchase-orders" },
+    { name: "View Sales Orders", icon: ClipboardList, href: "/view-sales-orders" },
+    { name: "View Parties", icon: Users, href: "/view-parties" },
+    { name: "View Inventory", icon: Box, href: "/products" },
+    { name: "Create Dispatch", icon: Settings, href: "/dispatches" },
+    { name: "Active Dispatches", icon: Truck, href: "/active-dispatches" },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Dashboard Header */}
+      <div className="bg-white shadow">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold sm:text-2xl">Dashboard</h1>
+              <p className="text-sm text-muted-foreground">
+                Welcome back, {user.name}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="hidden sm:flex"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleLogout}
+                className="sm:hidden"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        {/* Stats Grid */}
+        <div className="mb-8">
+          <h2 className="mb-4 text-lg font-semibold sm:text-xl">Overview</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {stats.map((stat, index) => (
+              <div
+                key={index}
+                className="rounded-lg bg-white p-6 shadow transition-shadow hover:shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {stat.title}
+                    </p>
+                    <p className="mt-2 text-2xl font-bold sm:text-3xl">
+                      {stat.value}
+                    </p>
+                  </div>
+                  <div className={`rounded-full p-3 ${stat.color}`}>
+                    <stat.icon className="h-6 w-6" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Quick Actions */}
+          <div className="lg:col-span-2">
+            <h2 className="mb-4 text-lg font-semibold sm:text-xl">
+              Quick Actions
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {quickActions.map((action, index) => (
+                <a
+                  key={index}
+                  href={action.href}
+                  className="flex items-center gap-4 rounded-lg bg-white p-4 shadow transition-all hover:shadow-md"
+                >
+                  <div className="rounded-full bg-blue-100 p-3">
+                    <action.icon className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <span className="font-medium">{action.name}</span>
+                </a>
+              ))}
+            </div>
+
+            {/* Chart Placeholder */}
+            <div className="mt-8">
+              <h2 className="mb-4 text-lg font-semibold sm:text-xl">
+                Sales Overview
+              </h2>
+              <div className="flex h-64 items-center justify-center rounded-lg bg-white shadow sm:h-80">
+                <div className="text-center">
+                  <BarChart3 className="mx-auto mb-2 h-12 w-12 text-muted-foreground" />
+                  <p className="text-muted-foreground">
+                    Chart visualization coming soon
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div>
+            <h2 className="mb-4 text-lg font-semibold sm:text-xl">
+              Recent Activity
+            </h2>
+            <div className="rounded-lg bg-white p-4 shadow">
+              <div className="space-y-4">
+                {recentActivities.map((activity, index) => (
+                  <div
+                    key={index}
+                    className="border-b pb-4 last:border-b-0 last:pb-0"
+                  >
+                    <p className="text-sm font-medium">{activity.action}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {activity.time}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* User Info Card */}
+            <div className="mt-6 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 p-6 text-white shadow">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur">
+                <Users className="h-8 w-8" />
+              </div>
+              <h3 className="mb-1 text-lg font-semibold">{user.name}</h3>
+              <p className="mb-2 text-sm opacity-90">{user.email}</p>
+              <div className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs backdrop-blur">
+                {user.role}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Dashboard;
+
