@@ -83,6 +83,80 @@ const sendRegistrationOTP = asyncHandler(async (req, res) => {
   });
   
 
+const sendLoginOTP = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+  
+    if (!email?.trim()) {
+      throw new ApiError(400, "Email is required");
+    }
+  
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new ApiError(404, "User not found. Please register first.");
+    }
+  
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+  
+    const existingOtp = await prisma.emailOTP.findUnique({ where: { email } });
+    if (existingOtp) {
+      await prisma.emailOTP.update({
+        where: { email },
+        data: { otp, expiresAt, verified: false },
+      });
+    } else {
+      await prisma.emailOTP.create({
+        data: { email, otp, expiresAt },
+      });
+    }
+  
+    await sendOTPEmail(email, otp);
+  
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Login OTP sent successfully to your email"));
+});
+
+const loginWithOTP = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+  
+    if ([email, otp].some((field) => !field?.trim())) {
+      throw new ApiError(400, "Email and OTP are required");
+    }
+  
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+  
+    const otpRecord = await prisma.emailOTP.findUnique({ where: { email } });
+  
+    if (!otpRecord) throw new ApiError(400, "No OTP found for this email");
+    if (otpRecord.expiresAt < new Date()) throw new ApiError(400, "OTP expired");
+    if (otpRecord.otp !== otp) throw new ApiError(400, "Invalid OTP");
+  
+    // Delete OTP after successful verification
+    await prisma.emailOTP.delete({
+      where: { email }
+    });
+  
+    const accessToken = await generateAccessToken(user);
+    const refreshToken = await generateRefreshToken(user);
+  
+    const options = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+    };
+  
+    res
+      .cookie("refreshToken", refreshToken, options)
+      .cookie("accessToken", accessToken, options);
+  
+    return res.send(user);
+});
+
 const loginUser = asyncHandler(async(req, res) => {
     const {email, password} = req.body;
 
@@ -118,6 +192,75 @@ const loginUser = asyncHandler(async(req, res) => {
     
     return res.send(user)
 })
+
+const sendPasswordResetOTP = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+  
+    if (!email?.trim()) {
+      throw new ApiError(400, "Email is required");
+    }
+  
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new ApiError(404, "User not found with this email");
+    }
+  
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes for password reset
+  
+    const existingOtp = await prisma.emailOTP.findUnique({ where: { email } });
+    if (existingOtp) {
+      await prisma.emailOTP.update({
+        where: { email },
+        data: { otp, expiresAt, verified: false },
+      });
+    } else {
+      await prisma.emailOTP.create({
+        data: { email, otp, expiresAt },
+      });
+    }
+  
+    await sendOTPEmail(email, otp, "Password Reset");
+  
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password reset OTP sent to your email"));
+});
+
+const resetPasswordWithOTP = asyncHandler(async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+  
+    if ([email, otp, newPassword].some((field) => !field?.trim())) {
+      throw new ApiError(400, "All fields are required");
+    }
+  
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+  
+    const otpRecord = await prisma.emailOTP.findUnique({ where: { email } });
+  
+    if (!otpRecord) throw new ApiError(400, "No OTP found for this email");
+    if (otpRecord.expiresAt < new Date()) throw new ApiError(400, "OTP expired");
+    if (otpRecord.otp !== otp) throw new ApiError(400, "Invalid OTP");
+  
+    // Update password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { email },
+      data: { password: hashedPassword },
+    });
+  
+    // Delete OTP after successful reset
+    await prisma.emailOTP.delete({
+      where: { email }
+    });
+  
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password reset successfully"));
+});
 
 //secured routes
 
@@ -312,6 +455,10 @@ export {
     registerUser,
     sendRegistrationOTP,
     loginUser,
+    sendLoginOTP,
+    loginWithOTP,
+    sendPasswordResetOTP,
+    resetPasswordWithOTP,
     logoutUser,
     refreshAccessToken,
     changePassword,

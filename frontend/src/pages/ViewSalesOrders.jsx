@@ -57,77 +57,196 @@ function ViewSalesOrders() {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Sales Order Receipt - SO #${orderData.id.slice(-8).toUpperCase()}</title>
+        <title>Sales Order - SO #${orderData.id.slice(-8).toUpperCase()}</title>
         <style>
-          body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-            line-height: 1.6;
-          }
-          .header {
-            text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-          }
-          .header h1 {
-            color: #16a34a;
+          * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            line-height: 1.6;
+            color: #333;
+          }
+          .document-header {
+            border-bottom: 3px solid #1e293b;
+            padding-bottom: 25px;
+            margin-bottom: 30px;
+          }
+          .company-info {
+            text-align: left;
+          }
+          .company-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+            margin-bottom: 5px;
+          }
+          .company-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
+          .document-title {
+            text-align: center;
+            margin: 25px 0;
+          }
+          .document-title h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+          }
+          .document-number {
+            font-size: 16px;
+            color: #64748b;
+            font-weight: 500;
+          }
+          .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
           }
           .info-section {
-            margin: 20px 0;
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 4px;
+            border-left: 4px solid #1e293b;
+          }
+          .info-section h3 {
+            font-size: 13px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: 600;
+          }
+          .info-row {
             display: flex;
             justify-content: space-between;
-            gap: 20px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
           }
-          .info-box {
-            flex: 1;
+          .info-row:last-child {
+            border-bottom: none;
           }
-          .info-box h3 {
-            color: #333;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
+          .info-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+          }
+          .info-value {
+            font-size: 13px;
+            color: #1e293b;
+            font-weight: 600;
+            text-align: right;
+          }
+          .items-section {
+            margin: 40px 0;
+          }
+          .section-title {
+            font-size: 14px;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: 600;
           }
           table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            border: 1px solid #e2e8f0;
           }
-          th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
+          thead {
+            background-color: #1e293b;
+            color: white;
           }
           th {
-            background-color: #f3f4f6;
-            font-weight: bold;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+          }
+          tbody tr:hover {
+            background-color: #f8fafc;
+          }
+          tbody tr:last-child td {
+            border-bottom: none;
           }
           .total-row {
-            background-color: #dcfce7;
-            font-weight: bold;
+            background-color: #f1f5f9;
+            font-weight: 700;
+            border-top: 2px solid #1e293b;
+          }
+          .total-row td {
+            color: #1e293b;
+            font-size: 14px;
+          }
+          .status-section {
+            margin: 30px 0;
+            padding: 20px;
+            ${orderData.isDispatched 
+              ? 'background-color: #fff7ed; border-left: 4px solid #f97316;' 
+              : 'background-color: #f0fdf4; border-left: 4px solid #10b981;'}
+            border-radius: 4px;
+          }
+          .status-label {
+            font-size: 12px;
+            ${orderData.isDispatched 
+              ? 'color: #9a3412;' 
+              : 'color: #166534;'}
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
           }
           .footer {
-            margin-top: 40px;
+            margin-top: 50px;
+            padding-top: 25px;
+            border-top: 2px solid #e2e8f0;
             text-align: center;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
           }
-          .status-badge {
-            display: inline-block;
-            background-color: ${orderData.isDispatched ? '#fb923c' : '#16a34a'};
+          .footer p {
+            font-size: 12px;
+            color: #64748b;
+            margin: 8px 0;
+          }
+          .print-button {
+            background-color: #1e293b;
             color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 4px;
+            cursor: pointer;
             font-size: 14px;
+            font-weight: 600;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: background-color 0.2s;
+          }
+          .print-button:hover {
+            background-color: #334155;
           }
           @media print {
             body {
               margin: 0;
-              padding: 20px;
+              padding: 30px;
             }
             .no-print {
               display: none;
@@ -136,70 +255,86 @@ function ViewSalesOrders() {
         </style>
       </head>
       <body>
-        <div class="header">
-          <h1>📋 SALES ORDER RECEIPT</h1>
-          <p>Plast India Corporation</p>
-          <p style="margin: 5px 0;">Sales Order #${orderData.id.slice(-8).toUpperCase()}</p>
-          <span class="status-badge">${orderData.isDispatched ? '✓ DISPATCHED' : 'PENDING'}</span>
+        <div class="document-header">
+          <div class="company-info">
+            <div class="company-name">PLAST INDIA CORPORATION</div> 
+          </div>
+        </div>
+
+        <div class="document-title">
+          <h1>Sales Order</h1>
+          <div class="document-number">SO #${orderData.id.slice(-8).toUpperCase()}</div>
+        </div>
+
+        <div class="status-section">
+          <div class="status-label">Status: ${orderData.isDispatched ? 'Dispatched' : 'Pending Dispatch'}</div>
         </div>
         
-        <div class="info-section">
-          <div class="info-box">
+        <div class="info-grid">
+          <div class="info-section">
             <h3>Order Information</h3>
-            <p><strong>Sales Order ID:</strong> ${orderData.id.slice(-8).toUpperCase()}</p>
-            <p><strong>Date Created:</strong> ${formatDate(orderData.createdAt)}</p>
-            <p><strong>Status:</strong> ${orderData.isDispatched ? 'Dispatched' : 'Pending'}</p>
+            <div class="info-row">
+              <span class="info-label">Sales Order ID</span>
+              <span class="info-value">${orderData.id.slice(-8).toUpperCase()}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Date Created</span>
+              <span class="info-value">${formatDate(orderData.createdAt)}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Order Status</span>
+              <span class="info-value">${orderData.isDispatched ? 'Dispatched' : 'Pending'}</span>
+            </div>
           </div>
           ${orderData.party ? `
-          <div class="info-box">
-            <h3>Party/Client Information</h3>
-            <p><strong>Name:</strong> ${orderData.party.name}</p>
-            <p><strong>Contact:</strong> ${orderData.party.contactNumber}</p>
+          <div class="info-section">
+            <h3>Client Information</h3>
+            <div class="info-row">
+              <span class="info-label">Client Name</span>
+              <span class="info-value">${orderData.party.name}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Contact Number</span>
+              <span class="info-value">${orderData.party.contactNumber}</span>
+            </div>
           </div>
           ` : ''}
         </div>
 
-        <h3>Order Items</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Product Name</th>
-              <th style="text-align: center;">Quantity</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${orderData.items.map((item, index) => `
+        <div class="items-section">
+          <div class="section-title">Order Items</div>
+          <table>
+            <thead>
               <tr>
-                <td>${index + 1}</td>
-                <td>${item.product?.name || 'Unknown Product'}</td>
-                <td style="text-align: center;">${item.quantity}</td>
+                <th style="width: 60px;">#</th>
+                <th>Product Name</th>
+                <th style="text-align: center; width: 150px;">Quantity</th>
               </tr>
-            `).join('')}
-            <tr class="total-row">
-              <td colspan="2" style="text-align: right;">Total Items:</td>
-              <td style="text-align: center;">${orderData.items.length}</td>
-            </tr>
-            <tr class="total-row">
-              <td colspan="2" style="text-align: right;">Total Quantity:</td>
-              <td style="text-align: center;">${orderData.items.reduce((sum, item) => sum + item.quantity, 0)}</td>
-            </tr>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              ${orderData.items.map((item, index) => `
+                <tr>
+                  <td>${index + 1}</td>
+                  <td>${item.product?.name || 'Unknown Product'}</td>
+                  <td style="text-align: center; font-weight: 600;">${item.quantity}</td>
+                </tr>
+              `).join('')}
+              <tr class="total-row">
+                <td colspan="2" style="text-align: right;">TOTAL ITEMS</td>
+                <td style="text-align: center;">${orderData.items.length}</td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="2" style="text-align: right;">TOTAL QUANTITY</td>
+                <td style="text-align: center;">${orderData.items.reduce((sum, item) => sum + item.quantity, 0)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <div class="footer">
-          <p>This is a warehouse document for order fulfillment.</p>
-          <p>Plast India Corporation - Warehouse Copy</p>
-          <button class="no-print" onclick="window.print()" style="
-            background-color: #16a34a;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-          ">Print Receipt</button>
+          <p>This is a warehouse document for order fulfillment and tracking.</p>
+          <p>For any queries, please contact Plast India Corporation.</p>
+          <button class="print-button no-print" onclick="window.print()">Print Document</button>
         </div>
       </body>
       </html>

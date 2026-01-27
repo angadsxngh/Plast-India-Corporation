@@ -27,6 +27,7 @@ import AddParty from "./pages/AddParty";
 import ViewParties from "./pages/ViewParties";
 import { UserProvider } from "./context/UserContext";
 import PrivateRoute from "@/components/PrivateRoute";
+import { Toaster } from "sonner";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -61,6 +62,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <UserProvider>
       <RouterProvider router={router} />
+      <Toaster position="top-right" richColors />
     </UserProvider>
   </StrictMode>
 );

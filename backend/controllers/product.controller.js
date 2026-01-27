@@ -386,7 +386,7 @@ const getSalesOrders = asyncHandler(async(req, res) => {
 })
 
 const createDispatchOrder = asyncHandler(async(req, res) => {
-    const { salesOrderId, items } = req.body;
+    const { salesOrderId, items, vehicleNumber } = req.body;
     
     if(!salesOrderId){
         throw new ApiError(400, "Sales Order ID is required");
@@ -394,6 +394,10 @@ const createDispatchOrder = asyncHandler(async(req, res) => {
     
     if(!items?.length){
         throw new ApiError(400, "Items are required");
+    }
+
+    if(!vehicleNumber?.trim()){
+        throw new ApiError(400, "Vehicle number is required");
     }
 
     // Validate that all items have productId, productName, and quantity
@@ -440,6 +444,7 @@ const createDispatchOrder = asyncHandler(async(req, res) => {
         const dispatchOrder = await tx.dispatchOrder.create({
             data: {
                 salesOrderId,
+                vehicleNumber: vehicleNumber.trim(),
                 isCompleted: false
             }
         });

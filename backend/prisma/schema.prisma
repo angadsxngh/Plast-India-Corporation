@@ -100,13 +100,14 @@ model SalesOrderItem {
 }
 
 model DispatchOrder {
-  id           String              @id @default(auto()) @map("_id") @db.ObjectId
-  salesOrder   SalesOrder          @relation(fields: [salesOrderId], references: [id])
-  salesOrderId String              @db.ObjectId
-  items        DispatchOrderItem[]
-  isCompleted  Boolean             @default(false)
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
+  id            String              @id @default(auto()) @map("_id") @db.ObjectId
+  salesOrder    SalesOrder          @relation(fields: [salesOrderId], references: [id])
+  salesOrderId  String              @db.ObjectId
+  items         DispatchOrderItem[]
+  vehicleNumber String?
+  isCompleted   Boolean             @default(false)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 }
 
 model DispatchOrderItem {

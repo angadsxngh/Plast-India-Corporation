@@ -124,6 +124,17 @@ function PurchaseOrder() {
     return product ? product.name : "";
   };
 
+  // Get available products for a specific row (excluding already selected products from other rows)
+  const getAvailableProducts = (currentIndex) => {
+    if (!Array.isArray(products)) return [];
+    
+    const selectedProductIds = orderItems
+      .map((item, index) => index !== currentIndex ? item.productId : null)
+      .filter(id => id); // Remove nulls and empty strings
+    
+    return products.filter(product => !selectedProductIds.includes(product.id));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -220,12 +231,16 @@ function PurchaseOrder() {
                                   required
                                 >
                                   <option value="">Select a product</option>
-                                  {Array.isArray(products) &&
-                                    products.map((product) => (
-                                      <option key={product.id} value={product.id}>
-                                        {product.name}
-                                      </option>
-                                    ))}
+                                  {item.productId && !getAvailableProducts(index).find(p => p.id === item.productId) && (
+                                    <option value={item.productId}>
+                                      {getProductName(item.productId)}
+                                    </option>
+                                  )}
+                                  {getAvailableProducts(index).map((product) => (
+                                    <option key={product.id} value={product.id}>
+                                      {product.name}
+                                    </option>
+                                  ))}
                                 </select>
                               </td>
                               <td className="px-4 py-3">
@@ -300,12 +315,16 @@ function PurchaseOrder() {
                                 required
                               >
                                 <option value="">Select a product</option>
-                                {Array.isArray(products) &&
-                                  products.map((product) => (
-                                    <option key={product.id} value={product.id}>
-                                      {product.name}
-                                    </option>
-                                  ))}
+                                {item.productId && !getAvailableProducts(index).find(p => p.id === item.productId) && (
+                                  <option value={item.productId}>
+                                    {getProductName(item.productId)}
+                                  </option>
+                                )}
+                                {getAvailableProducts(index).map((product) => (
+                                  <option key={product.id} value={product.id}>
+                                    {product.name}
+                                  </option>
+                                ))}
                               </select>
                             </div>
                             <div>

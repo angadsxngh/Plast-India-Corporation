@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import { PrismaClient } from '@prisma/client';
@@ -33,5 +34,18 @@ app.get('/', (req,res) => {
 app.use('/api/v1', userRouter)
 app.use('/api/v1', productRouter)
 app.use('/api/v1', partyRouter)
+
+// Error handling middleware (must be after all routes)
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    
+    res.status(statusCode).json({
+        success: false,
+        statusCode,
+        message,
+        errors: err.errors || []
+    });
+});
 
 export {app}

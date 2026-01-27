@@ -16,15 +16,54 @@ import {
   ClipboardList,
   Truck,
   UserPlus,
+  ChevronDown,
+  Plus,
+  Eye,
+  Layers,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useUser } from "../context/UserContext";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { user, categories, products, purchaseOrders, salesOrders } = useUser();
+  const { 
+    user, 
+    categories, 
+    products, 
+    purchaseOrders, 
+    salesOrders,
+    refreshCategories,
+    refreshProducts,
+    refreshPurchaseOrders,
+    refreshSalesOrders
+  } = useUser();
 
+  // Auto-refresh all data when dashboard loads
+  useEffect(() => {
+    const refreshAllData = async () => {
+      try {
+        await Promise.all([
+          refreshCategories(),
+          refreshProducts(),
+          refreshPurchaseOrders(),
+          refreshSalesOrders()
+        ]);
+      } catch (error) {
+        console.error("Error refreshing dashboard data:", error);
+      }
+    };
+
+    refreshAllData();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -85,18 +124,50 @@ function Dashboard() {
     { action: "Report generated", time: "5 hours ago", type: "report" },
   ];
 
-  const quickActions = [
-    { name: "Add Product", icon: Package, href: "/add-product" },
-    { name: "Add Party", icon: UserPlus, href: "/add-party" },
-    { name: "Purchase Order", icon: ShoppingCart, href: "/purchase-order" },
-    { name: "Sales Order", icon: FileText, href: "/sales-order" },
-    { name: "Add Category", icon: Tag, href: "/add-category" },
-    { name: "View Purchase Orders", icon: List, href: "/view-purchase-orders" },
-    { name: "View Sales Orders", icon: ClipboardList, href: "/view-sales-orders" },
-    { name: "View Parties", icon: Users, href: "/view-parties" },
-    { name: "View Inventory", icon: Box, href: "/products" },
-    { name: "Create Dispatch", icon: Settings, href: "/dispatches" },
-    { name: "Active Dispatches", icon: Truck, href: "/active-dispatches" },
+  const actionCategories = [
+    {
+      title: "Inventory",
+      icon: Package,
+      color: "bg-white hover:bg-gray-50 border-2 border-gray-200",
+      iconColor: "text-slate-600",
+      items: [
+        { name: "Add Product", icon: Plus, href: "/add-product" },
+        { name: "Add Category", icon: Tag, href: "/add-category" },
+        { name: "View Inventory", icon: Eye, href: "/products" },
+      ],
+    },
+    {
+      title: "Orders",
+      icon: ShoppingCart,
+      color: "bg-white hover:bg-gray-50 border-2 border-gray-200",
+      iconColor: "text-slate-600",
+      items: [
+        { name: "New Purchase Order", icon: Plus, href: "/purchase-order" },
+        { name: "New Sales Order", icon: FileText, href: "/sales-order" },
+        { name: "View Purchase Orders", icon: List, href: "/view-purchase-orders" },
+        { name: "View Sales Orders", icon: ClipboardList, href: "/view-sales-orders" },
+      ],
+    },
+    {
+      title: "Parties",
+      icon: Users,
+      color: "bg-white hover:bg-gray-50 border-2 border-gray-200",
+      iconColor: "text-slate-600",
+      items: [
+        { name: "Add Party", icon: UserPlus, href: "/add-party" },
+        { name: "View All Parties", icon: Eye, href: "/view-parties" },
+      ],
+    },
+    {
+      title: "Dispatch",
+      icon: Truck,
+      color: "bg-white hover:bg-gray-50 border-2 border-gray-200",
+      iconColor: "text-slate-600",
+      items: [
+        { name: "Create Dispatch", icon: Plus, href: "/dispatches" },
+        { name: "Active Dispatches", icon: Layers, href: "/active-dispatches" },
+      ],
+    },
   ];
 
   return (
@@ -171,18 +242,35 @@ function Dashboard() {
             <h2 className="mb-4 text-lg font-semibold sm:text-xl">
               Quick Actions
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {quickActions.map((action, index) => (
-                <a
-                  key={index}
-                  href={action.href}
-                  className="flex items-center gap-4 rounded-lg bg-white p-4 shadow transition-all hover:shadow-md"
-                >
-                  <div className="rounded-full bg-blue-100 p-3">
-                    <action.icon className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <span className="font-medium">{action.name}</span>
-                </a>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {actionCategories.map((category, index) => (
+                <DropdownMenu key={index}>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      className={`${category.color} h-auto flex-col gap-3 py-6 shadow-sm transition-all hover:shadow-md`}
+                    >
+                      <category.icon className={`h-7 w-7 ${category.iconColor}`} />
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm text-slate-700">{category.title}</span>
+                        <ChevronDown className={`h-3.5 w-3.5 ${category.iconColor}`} />
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    <DropdownMenuLabel className="text-slate-700">{category.title} Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {category.items.map((item, itemIndex) => (
+                      <DropdownMenuItem
+                        key={itemIndex}
+                        onClick={() => navigate(item.href)}
+                        className="cursor-pointer hover:bg-slate-50"
+                      >
+                        <item.icon className="mr-2 h-4 w-4 text-slate-600" />
+                        <span className="text-slate-700">{item.name}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ))}
             </div>
 
