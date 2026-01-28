@@ -7,7 +7,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 
 function AddCategory() {
   const navigate = useNavigate();
@@ -68,7 +68,6 @@ function AddCategory() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Toaster />
       {/* Header */}
       <div className="bg-white shadow sticky top-0 z-10">
         <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">

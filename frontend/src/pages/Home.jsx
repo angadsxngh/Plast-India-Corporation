@@ -1,8 +1,16 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Package, Recycle, Award, Phone } from "lucide-react";
-
+import { useUser } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
 function Home() {
+  const { user } = useUser();
+  const navigate = useNavigate();
+  React.useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
   return (
     <div className="flex flex-col scroll-smooth">
       {/* Hero Section */}

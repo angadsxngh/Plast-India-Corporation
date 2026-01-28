@@ -44,7 +44,8 @@ function Dashboard() {
     refreshCategories,
     refreshProducts,
     refreshPurchaseOrders,
-    refreshSalesOrders
+    refreshSalesOrders,
+    logout
   } = useUser();
 
   // Auto-refresh all data when dashboard loads
@@ -65,9 +66,30 @@ function Dashboard() {
     refreshAllData();
   }, []);
 
+  // Prevent back button from taking user to login page
+  useEffect(() => {
+    // Add a hash to the URL to create a barrier
+    window.history.pushState(null, '', window.location.pathname);
+
+    const handlePopState = (e) => {
+      // Prevent default back navigation
+      window.history.pushState(null, '', window.location.pathname);
+      
+      // If user tries to go back, keep them on dashboard
+      if (window.location.pathname !== '/dashboard') {
+        navigate('/dashboard', { replace: true });
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [navigate]);
+
   const handleLogout = async () => {
     try {
-  
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/logout`,
         {
@@ -75,11 +97,17 @@ function Dashboard() {
           credentials: "include",
         }
       );
-      if (response.ok) {
-        navigate("/login");
-      }
+      
+      // Clear user state and localStorage regardless of response
+      logout();
+      
+      // Navigate to login page
+      navigate("/login", { replace: true });
     } catch (error) {
       console.error("Logout error:", error);
+      // Even if there's an error, clear state and navigate
+      logout();
+      navigate("/login", { replace: true });
     }
   };
 

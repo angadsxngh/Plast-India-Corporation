@@ -53,6 +53,8 @@ function EditDispatch() {
       updatedItems[index].productName = product ? product.name : "";
     } else if (field === "quantity") {
       updatedItems[index][field] = Number(value);
+    } else {
+      updatedItems[index][field] = value;
     }
     
     setOrderItems(updatedItems);

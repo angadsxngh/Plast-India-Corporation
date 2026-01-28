@@ -4,10 +4,8 @@ const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
     const BASE_URL = import.meta.env.VITE_BASE_URL;
-    const [user, setUser] = useState(() => {
-        const storedUser = localStorage.getItem("user");
-        return storedUser ? JSON.parse(storedUser) : null;
-    })
+    const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [categories, setCategories] = useState([]);
     const [products, setProducts] = useState([]);
@@ -16,19 +14,38 @@ export const UserProvider = ({ children }) => {
 
     const fetchUser = async() => {
         try {
+            setIsLoading(true);
             const response = await fetch(`${BASE_URL}/user`, {
                 credentials: "include",
             });
             if (!response.ok) {
+                // Clear user state if unauthorized (this is normal when not logged in)
+                if (response.status === 401) {
+                    setUser(null);
+                    return; // Don't throw error for 401, it's a normal state
+                }
                 throw new Error("Failed to fetch user data");
             }
             const data = await response.json();
             setUser(data);
-            localStorage.setItem("user", JSON.stringify(data));
         } catch (error) {
             console.error("Error fetching user:", error);
-            throw new Error("Failed to fetch user data");
+            setUser(null);
+        } finally {
+            setIsLoading(false);
         }
+    }
+
+    const login = (userData) => {
+        setUser(userData);
+    }
+
+    const logout = () => {
+        setUser(null);
+        setCategories([]);
+        setProducts([]);
+        setPurchaseOrders([]);
+        setSalesOrders([]);
     }
 
     const fetchCategories = async() => {
@@ -103,18 +120,27 @@ export const UserProvider = ({ children }) => {
         }
     }
 
+    // Fetch user on mount to check authentication status
     useEffect(() => {
         fetchUser();
-        fetchCategories();
-        fetchProducts();
-        fetchPurchaseOrders();
-        fetchSalesOrders();
     }, []);
+
+    // Fetch other data when user changes
+    useEffect(() => {
+        // Only fetch data if user is logged in
+        if (user) {
+            fetchCategories();
+            fetchProducts();
+            fetchPurchaseOrders();
+            fetchSalesOrders();
+        }
+    }, [user?.id]); // Only refetch when user changes
 
     return (
         <UserContext.Provider value={{ 
-            user, categories, products, purchaseOrders, salesOrders,
-            refreshUser: fetchUser, refreshCategories: fetchCategories, refreshProducts: fetchProducts, refreshPurchaseOrders: fetchPurchaseOrders, refreshSalesOrders: fetchSalesOrders }}>
+            user, isLoading, categories, products, purchaseOrders, salesOrders,
+            refreshUser: fetchUser, refreshCategories: fetchCategories, refreshProducts: fetchProducts, refreshPurchaseOrders: fetchPurchaseOrders, refreshSalesOrders: fetchSalesOrders,
+            login, logout }}>
       {children}
     </UserContext.Provider>
   );

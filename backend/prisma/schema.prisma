@@ -81,6 +81,7 @@ model Party {
 
 model SalesOrder {
   id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  receiptId      Int?
   items          SalesOrderItem[]
   dispatchOrders DispatchOrder[]
   party          Party?          @relation(fields: [partyId], references: [id])
@@ -101,6 +102,7 @@ model SalesOrderItem {
 
 model DispatchOrder {
   id            String              @id @default(auto()) @map("_id") @db.ObjectId
+  receiptId     Int?
   salesOrder    SalesOrder          @relation(fields: [salesOrderId], references: [id])
   salesOrderId  String              @db.ObjectId
   items         DispatchOrderItem[]

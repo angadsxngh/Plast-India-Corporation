@@ -7,7 +7,7 @@ import { useUser } from "../context/UserContext";
 
 function Login() {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { login, user } = useUser();
   const [isLoading, setIsLoading] = React.useState(false);
   const [loginMethod, setLoginMethod] = React.useState("password"); // "password" or "otp"
   const [otpSent, setOtpSent] = React.useState(false);
@@ -25,8 +25,9 @@ function Login() {
 
   // Redirect to dashboard if already logged in
   React.useEffect(() => {
+    console.log("user", user);
     if (user) {
-      navigate("/dashboard", { replace: true });
+      navigate("/dashboard");
     }
   }, [user, navigate]);
 
@@ -63,8 +64,16 @@ function Login() {
       }
       
       const data = await response.json();
-      toast.success("Login successful!");
-      navigate("/dashboard");
+      
+      // Update user context
+      if (data && data.id) {
+        login(data);
+        toast.success("Login successful!");
+        
+        // Clear history and navigate to dashboard
+        window.history.replaceState(null, '', '/dashboard');
+        navigate("/dashboard", { replace: true });
+      }
       
     } catch (error) {
       console.error("Login error:", error);
@@ -128,8 +137,16 @@ function Login() {
       }
 
       const data = await response.json();
-      toast.success("Login successful!");
-      navigate("/dashboard");
+      
+      // Update user context
+      if (data && data.id) {
+        login(data);
+        toast.success("Login successful!");
+        
+        // Clear history and navigate to dashboard
+        window.history.replaceState(null, '', '/dashboard');
+        navigate("/dashboard", { replace: true });
+      }
       
     } catch (error) {
       console.error("OTP Login error:", error);

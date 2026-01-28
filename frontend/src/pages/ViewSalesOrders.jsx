@@ -51,291 +51,147 @@ function ViewSalesOrders() {
   };
 
   const generateReceipt = (orderData) => {
-    // Create a printable receipt
+    const formatSimpleDate = (date) => new Date(date).toLocaleDateString('en-GB');
+    
     const receiptWindow = window.open('', '_blank');
     const receiptHTML = `
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Sales Order - SO #${orderData.id.slice(-8).toUpperCase()}</title>
+        <title>Sales Order Receipt #${orderData.receiptId || 'N/A'}</title>
         <style>
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
+          * { margin: 0; padding: 0; box-sizing: border-box; }
           body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 900px;
+            font-family: Arial, sans-serif;
+            padding: 15px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 40px;
-            line-height: 1.6;
-            color: #333;
+            font-size: 12px;
+            line-height: 1.3;
           }
-          .document-header {
-            border-bottom: 3px solid #1e293b;
-            padding-bottom: 25px;
-            margin-bottom: 30px;
-          }
-          .company-info {
-            text-align: left;
-          }
-          .company-name {
-            font-size: 28px;
-            font-weight: 700;
-            color: #1e293b;
-            letter-spacing: -0.5px;
-            margin-bottom: 5px;
-          }
-          .company-subtitle {
-            font-size: 13px;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-          }
-          .document-title {
-            text-align: center;
-            margin: 25px 0;
-          }
-          .document-title h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #1e293b;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-          }
-          .document-number {
-            font-size: 16px;
-            color: #64748b;
-            font-weight: 500;
-          }
-          .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin: 30px 0;
-          }
-          .info-section {
-            background-color: #f8fafc;
-            padding: 20px;
-            border-radius: 4px;
-            border-left: 4px solid #1e293b;
-          }
-          .info-section h3 {
-            font-size: 13px;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-            font-weight: 600;
-          }
-          .info-row {
+          .header {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e2e8f0;
+            align-items: flex-start;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #000;
+            margin-bottom: 8px;
           }
-          .info-row:last-child {
-            border-bottom: none;
+          .company-name {
+            font-size: 16px;
+            font-weight: bold;
+          }
+          .header-right {
+            text-align: right;
+            font-size: 10px;
+            line-height: 1.2;
+          }
+          .header-right div {
+            margin-bottom: 2px;
+          }
+          .title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 5px 0;
+            text-transform: uppercase;
+          }
+          .receipt-id {
+            text-align: center;
+            font-size: 10px;
+            margin-bottom: 5px;
+            color: #666;
+          }
+          .info-row {
+            padding: 2px 0;
+            font-size: 10px;
           }
           .info-label {
-            font-size: 13px;
-            color: #64748b;
-            font-weight: 500;
-          }
-          .info-value {
-            font-size: 13px;
-            color: #1e293b;
             font-weight: 600;
-            text-align: right;
-          }
-          .items-section {
-            margin: 40px 0;
-          }
-          .section-title {
-            font-size: 14px;
-            color: #1e293b;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-            font-weight: 600;
+            margin-right: 5px;
           }
           table {
             width: 100%;
             border-collapse: collapse;
-            border: 1px solid #e2e8f0;
-          }
-          thead {
-            background-color: #1e293b;
-            color: white;
+            margin: 5px 0 0 0;
           }
           th {
-            padding: 14px 16px;
+            background-color: #f0f0f0;
+            padding: 5px 6px;
             text-align: left;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            border: 1px solid #ddd;
           }
           td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 13px;
-          }
-          tbody tr:hover {
-            background-color: #f8fafc;
-          }
-          tbody tr:last-child td {
-            border-bottom: none;
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            font-size: 10px;
           }
           .total-row {
-            background-color: #f1f5f9;
-            font-weight: 700;
-            border-top: 2px solid #1e293b;
+            background-color: #f8f8f8;
+            font-weight: bold;
           }
-          .total-row td {
-            color: #1e293b;
-            font-size: 14px;
-          }
-          .status-section {
-            margin: 30px 0;
-            padding: 20px;
-            ${orderData.isDispatched 
-              ? 'background-color: #fff7ed; border-left: 4px solid #f97316;' 
-              : 'background-color: #f0fdf4; border-left: 4px solid #10b981;'}
-            border-radius: 4px;
-          }
-          .status-label {
-            font-size: 12px;
-            ${orderData.isDispatched 
-              ? 'color: #9a3412;' 
-              : 'color: #166534;'}
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-          }
-          .footer {
-            margin-top: 50px;
-            padding-top: 25px;
-            border-top: 2px solid #e2e8f0;
-            text-align: center;
-          }
-          .footer p {
-            font-size: 12px;
-            color: #64748b;
-            margin: 8px 0;
-          }
-          .print-button {
-            background-color: #1e293b;
+          .print-btn {
+            background: #000;
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 4px;
+            padding: 8px 16px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: background-color 0.2s;
-          }
-          .print-button:hover {
-            background-color: #334155;
+            margin-top: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 11px;
           }
           @media print {
-            body {
-              margin: 0;
-              padding: 30px;
-            }
-            .no-print {
-              display: none;
-            }
+            .no-print { display: none; }
+            body { padding: 10px; }
           }
         </style>
       </head>
       <body>
-        <div class="document-header">
-          <div class="company-info">
-            <div class="company-name">PLAST INDIA CORPORATION</div> 
+        <div class="header">
+          <div>
+            <div class="company-name">PLAST INDIA CORPORATION</div>
+          </div>
+          <div class="header-right">
+            <div><strong>Date:</strong> ${formatSimpleDate(new Date())}</div>
           </div>
         </div>
 
-        <div class="document-title">
-          <h1>Sales Order</h1>
-          <div class="document-number">SO #${orderData.id.slice(-8).toUpperCase()}</div>
+        <div class="title">Sales Order Receipt</div>
+        <div class="receipt-id">Receipt #${orderData.receiptId || 'N/A'}</div>
+
+        <div class="info-row">
+          <span class="info-label">Party Name:</span>
+          <span>${orderData.party?.name || 'N/A'}</span>
         </div>
 
-        <div class="status-section">
-          <div class="status-label">Status: ${orderData.isDispatched ? 'Dispatched' : 'Pending Dispatch'}</div>
-        </div>
-        
-        <div class="info-grid">
-          <div class="info-section">
-            <h3>Order Information</h3>
-            <div class="info-row">
-              <span class="info-label">Sales Order ID</span>
-              <span class="info-value">${orderData.id.slice(-8).toUpperCase()}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Date Created</span>
-              <span class="info-value">${formatDate(orderData.createdAt)}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Order Status</span>
-              <span class="info-value">${orderData.isDispatched ? 'Dispatched' : 'Pending'}</span>
-            </div>
-          </div>
-          ${orderData.party ? `
-          <div class="info-section">
-            <h3>Client Information</h3>
-            <div class="info-row">
-              <span class="info-label">Client Name</span>
-              <span class="info-value">${orderData.party.name}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Contact Number</span>
-              <span class="info-value">${orderData.party.contactNumber}</span>
-            </div>
-          </div>
-          ` : ''}
-        </div>
-
-        <div class="items-section">
-          <div class="section-title">Order Items</div>
-          <table>
-            <thead>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px;">#</th>
+              <th>Product Name</th>
+              <th style="width: 100px; text-align: center;">Quantity (pcs)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${orderData.items.map((item, index) => `
               <tr>
-                <th style="width: 60px;">#</th>
-                <th>Product Name</th>
-                <th style="text-align: center; width: 150px;">Quantity</th>
+                <td>${index + 1}</td>
+                <td>${item.product?.name || 'Unknown Product'}</td>
+                <td style="text-align: center;">${item.quantity}</td>
               </tr>
-            </thead>
-            <tbody>
-              ${orderData.items.map((item, index) => `
-                <tr>
-                  <td>${index + 1}</td>
-                  <td>${item.product?.name || 'Unknown Product'}</td>
-                  <td style="text-align: center; font-weight: 600;">${item.quantity}</td>
-                </tr>
-              `).join('')}
-              <tr class="total-row">
-                <td colspan="2" style="text-align: right;">TOTAL ITEMS</td>
-                <td style="text-align: center;">${orderData.items.length}</td>
-              </tr>
-              <tr class="total-row">
-                <td colspan="2" style="text-align: right;">TOTAL QUANTITY</td>
-                <td style="text-align: center;">${orderData.items.reduce((sum, item) => sum + item.quantity, 0)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+            `).join('')}
+            <tr class="total-row">
+              <td colspan="2" style="text-align: right;">TOTAL</td>
+              <td style="text-align: center;">${orderData.items.reduce((sum, item) => sum + item.quantity, 0)}</td>
+            </tr>
+          </tbody>
+        </table>
 
-        <div class="footer">
-          <p>This is a warehouse document for order fulfillment and tracking.</p>
-          <p>For any queries, please contact Plast India Corporation.</p>
-          <button class="print-button no-print" onclick="window.print()">Print Document</button>
-        </div>
+        <button class="print-btn no-print" onclick="window.print()">Print</button>
       </body>
       </html>
     `;

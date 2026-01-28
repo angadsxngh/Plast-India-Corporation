@@ -310,10 +310,18 @@ const createSalesOrder = asyncHandler(async(req, res) => {
 
     // Use transaction to ensure all operations succeed or fail together
     const result = await prisma.$transaction(async (tx) => {
-        // Create the sales order with party association
+        // Get the highest receiptId and increment
+        const lastSalesOrder = await tx.salesOrder.findFirst({
+            orderBy: { receiptId: 'desc' },
+            select: { receiptId: true }
+        });
+        const nextReceiptId = (lastSalesOrder?.receiptId || 0) + 1;
+
+        // Create the sales order with party association and receiptId
         const salesOrder = await tx.salesOrder.create({
             data: {
-                partyId: partyId
+                partyId: partyId,
+                receiptId: nextReceiptId
             },
             include: {
                 party: true
@@ -440,11 +448,19 @@ const createDispatchOrder = asyncHandler(async(req, res) => {
             throw new ApiError(400, "This sales order has already been dispatched");
         }
 
-        // Create the dispatch order first
+        // Get the highest receiptId and increment
+        const lastDispatchOrder = await tx.dispatchOrder.findFirst({
+            orderBy: { receiptId: 'desc' },
+            select: { receiptId: true }
+        });
+        const nextReceiptId = (lastDispatchOrder?.receiptId || 0) + 1;
+
+        // Create the dispatch order first with receiptId
         const dispatchOrder = await tx.dispatchOrder.create({
             data: {
                 salesOrderId,
                 vehicleNumber: vehicleNumber.trim(),
+                receiptId: nextReceiptId,
                 isCompleted: false
             }
         });
