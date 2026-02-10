@@ -31,9 +31,9 @@ app.get('/', (req,res) => {
     res.send("Hello World");
 })
 
-app.use('/api/v1', userRouter)
-app.use('/api/v1', productRouter)
-app.use('/api/v1', partyRouter)
+app.use('/', userRouter)
+app.use('/', productRouter)
+app.use('/', partyRouter)
 
 // Error handling middleware (must be after all routes)
 app.use((err, req, res, next) => {
