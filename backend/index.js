@@ -14,7 +14,7 @@ const app = express();
 const PORT=process.env.PORT || 3000;
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://plast-india-corporation-l9qz.vercel.app/"],
     credentials:true,   
 }))
 app.use(express.json({limit: "16kb"}))
