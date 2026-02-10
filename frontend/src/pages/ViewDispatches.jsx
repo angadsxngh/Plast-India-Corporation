@@ -14,7 +14,6 @@ function ViewDispatches() {
   const [errorDetails, setErrorDetails] = React.useState([]);
   const [products, setProducts] = React.useState([]);
   const [dispatchOrders, setDispatchOrders] = React.useState([]);
-  const [vehicleNumber, setVehicleNumber] = React.useState("");
 
   React.useEffect(() => {
     fetchSalesOrders();
@@ -127,11 +126,6 @@ function ViewDispatches() {
   };
 
   const handleProceedWithoutEdit = async () => {
-    if (!vehicleNumber.trim()) {
-      toast.error("Please enter a vehicle number");
-      return;
-    }
-
     // Create dispatch order with original SO items
     const items = selectedOrder.items.map(item => ({
       productId: item.productId,
@@ -162,7 +156,6 @@ function ViewDispatches() {
           body: JSON.stringify({
             salesOrderId: selectedOrder.id,
             items: items,
-            vehicleNumber: vehicleNumber.trim()
           }),
           credentials: "include",
         }
@@ -174,7 +167,6 @@ function ViewDispatches() {
       }
 
       toast.success("Dispatch order created successfully");
-      setVehicleNumber(""); // Reset vehicle number
       // Refresh the lists and products
       fetchSalesOrders();
       fetchDispatchOrders();
@@ -192,16 +184,11 @@ function ViewDispatches() {
   };
 
   const handleEditBeforeDispatch = () => {
-    if (!vehicleNumber.trim()) {
-      toast.error("Please enter a vehicle number");
-      return;
-    }
     setShowDialog(false);
-    // Navigate to edit page with the selected order and vehicle number
+    // Navigate to edit page with the selected order
     navigate(`/edit-dispatch/${selectedOrder.id}`, { 
       state: { 
         order: selectedOrder,
-        vehicleNumber: vehicleNumber.trim()
       } 
     });
   };
@@ -353,25 +340,6 @@ function ViewDispatches() {
             <h3 className="mb-4 text-lg font-semibold text-gray-900">
               Dispatch Order
             </h3>
-            
-            {/* Vehicle Number Input */}
-            <div className="mb-6">
-              <label
-                htmlFor="vehicleNumber"
-                className="mb-2 block text-sm font-medium text-gray-700"
-              >
-                Vehicle Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="vehicleNumber"
-                value={vehicleNumber}
-                onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
-                placeholder="Enter vehicle number (e.g., MH-12-AB-1234)"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                required
-              />
-            </div>
 
             <p className="mb-6 text-sm text-gray-600">
               Would you like to proceed with the dispatch as is, or edit the quantities/items first?
@@ -380,7 +348,6 @@ function ViewDispatches() {
               <Button
                 onClick={handleProceedWithoutEdit}
                 className="flex-1 bg-orange-600 hover:bg-orange-700"
-                disabled={!vehicleNumber.trim()}
               >
                 Proceed Without Editing
               </Button>
@@ -395,7 +362,6 @@ function ViewDispatches() {
             <Button
               onClick={() => {
                 setShowDialog(false);
-                setVehicleNumber("");
               }}
               variant="ghost"
               className="mt-3 w-full"

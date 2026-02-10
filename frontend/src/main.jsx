@@ -23,6 +23,7 @@ import ViewSalesOrders from "./pages/ViewSalesOrders";
 import ViewDispatches from "./pages/ViewDispatches";
 import EditDispatch from "./pages/EditDispatch";
 import ActiveDispatches from "./pages/ActiveDispatches";
+import Pendency from "./pages/Pendency";
 import AddParty from "./pages/AddParty";
 import ViewParties from "./pages/ViewParties";
 import { UserProvider } from "./context/UserContext";
@@ -52,6 +53,7 @@ const router = createBrowserRouter(
           <Route path="/dispatches" element={<ViewDispatches />} />
           <Route path="/edit-dispatch/:id" element={<EditDispatch />} />
           <Route path="/active-dispatches" element={<ActiveDispatches />} />
+          <Route path="/pendency" element={<Pendency />} />
         </Route>
       </Route>
     </>

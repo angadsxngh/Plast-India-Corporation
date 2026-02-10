@@ -9,6 +9,8 @@ import {
   Send,
   Users,
   Package,
+  Search,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -27,6 +29,24 @@ function SalesOrder() {
   const [orderItems, setOrderItems] = React.useState([
     { productId: "", quantity: 1 }
   ]);
+  const [productSearchTerms, setProductSearchTerms] = React.useState({});
+  const [showProductDropdowns, setShowProductDropdowns] = React.useState({});
+
+  // Initialize search terms when products are loaded or items change
+  React.useEffect(() => {
+    if (Array.isArray(products) && products.length > 0) {
+      const newSearchTerms = {};
+      orderItems.forEach((item, index) => {
+        if (item.productId) {
+          const product = products.find(p => p.id === item.productId);
+          if (product) {
+            newSearchTerms[index] = product.name;
+          }
+        }
+      });
+      setProductSearchTerms(prev => ({ ...prev, ...newSearchTerms }));
+    }
+  }, [products, orderItems.length]);
 
   // Load products and parties on component mount
   React.useEffect(() => {
@@ -82,6 +102,27 @@ function SalesOrder() {
     if (orderItems.length > 1) {
       const updatedItems = orderItems.filter((_, i) => i !== index);
       setOrderItems(updatedItems);
+      // Clean up search terms for removed item and reindex remaining items
+      setProductSearchTerms(prev => {
+        const updated = {};
+        updatedItems.forEach((item, newIndex) => {
+          const oldIndex = newIndex < index ? newIndex : newIndex + 1;
+          if (prev[oldIndex]) {
+            updated[newIndex] = prev[oldIndex];
+          }
+        });
+        return updated;
+      });
+      setShowProductDropdowns(prev => {
+        const updated = {};
+        updatedItems.forEach((item, newIndex) => {
+          const oldIndex = newIndex < index ? newIndex : newIndex + 1;
+          if (prev[oldIndex]) {
+            updated[newIndex] = prev[oldIndex];
+          }
+        });
+        return updated;
+      });
     } else {
       toast.error("At least one item is required");
     }
@@ -138,6 +179,8 @@ function SalesOrder() {
       // Reset form
       setSelectedPartyId("");
       setOrderItems([{ productId: "", quantity: 1 }]);
+      setProductSearchTerms({});
+      setShowProductDropdowns({});
       
       // Optionally navigate back to dashboard after a short delay
       setTimeout(() => {
@@ -187,6 +230,54 @@ function SalesOrder() {
     
     return products.filter(product => !selectedProductIds.includes(product.id));
   };
+
+  // Filter products based on search term (case-insensitive)
+  const getFilteredProducts = (currentIndex, searchTerm) => {
+    const available = getAvailableProducts(currentIndex);
+    if (!searchTerm || searchTerm.trim() === "") {
+      return available;
+    }
+    const term = searchTerm.toLowerCase().trim();
+    return available.filter(product => 
+      product.name.toLowerCase().includes(term)
+    );
+  };
+
+  // Handle product search input change
+  const handleProductSearchChange = (index, value) => {
+    setProductSearchTerms(prev => ({
+      ...prev,
+      [index]: value
+    }));
+    setShowProductDropdowns(prev => ({
+      ...prev,
+      [index]: true
+    }));
+  };
+
+  // Handle product selection
+  const handleProductSelect = (index, productId, productName) => {
+    handleItemChange(index, "productId", productId);
+    setProductSearchTerms(prev => ({
+      ...prev,
+      [index]: productName
+    }));
+    setShowProductDropdowns(prev => ({
+      ...prev,
+      [index]: false
+    }));
+  };
+
+  // Handle click outside to close dropdown
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.product-search-container')) {
+        setShowProductDropdowns({});
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -330,27 +421,54 @@ function SalesOrder() {
                                 {index + 1}
                               </td>
                               <td className="px-4 py-3">
-                                <select
-                                  id={`product-${index}`}
-                                  value={item.productId}
-                                  onChange={(e) =>
-                                    handleItemChange(index, "productId", e.target.value)
-                                  }
-                                  className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                  required
-                                >
-                                  <option value="">Select a product</option>
-                                  {item.productId && !getAvailableProducts(index).find(p => p.id === item.productId) && (
-                                    <option value={item.productId}>
-                                      {getProductName(item.productId)}
-                                    </option>
+                                <div className="product-search-container relative">
+                                  <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                      type="text"
+                                      id={`product-${index}`}
+                                      value={productSearchTerms[index] || (item.productId ? getProductName(item.productId) : "")}
+                                      onChange={(e) => handleProductSearchChange(index, e.target.value)}
+                                      onFocus={() => setShowProductDropdowns(prev => ({ ...prev, [index]: true }))}
+                                      placeholder="Search and select a product..."
+                                      className="w-full rounded-md border border-input bg-white pl-10 pr-10 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                      required={!item.productId}
+                                    />
+                                    {productSearchTerms[index] && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setProductSearchTerms(prev => ({ ...prev, [index]: "" }));
+                                          handleItemChange(index, "productId", "");
+                                          setShowProductDropdowns(prev => ({ ...prev, [index]: false }));
+                                        }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                  </div>
+                                  {showProductDropdowns[index] && (
+                                    <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                                      {getFilteredProducts(index, productSearchTerms[index] || "").length === 0 ? (
+                                        <div className="px-3 py-2 text-sm text-gray-500">
+                                          No products found
+                                        </div>
+                                      ) : (
+                                        getFilteredProducts(index, productSearchTerms[index] || "").map((product) => (
+                                          <button
+                                            key={product.id}
+                                            type="button"
+                                            onClick={() => handleProductSelect(index, product.id, product.name)}
+                                            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                                          >
+                                            {product.name}
+                                          </button>
+                                        ))
+                                      )}
+                                    </div>
                                   )}
-                                  {getAvailableProducts(index).map((product) => (
-                                    <option key={product.id} value={product.id}>
-                                      {product.name}
-                                    </option>
-                                  ))}
-                                </select>
+                                </div>
                               </td>
                               <td className="px-4 py-3">
                                 <input
@@ -424,26 +542,53 @@ function SalesOrder() {
                               <label className="mb-1 block text-xs font-medium text-gray-600">
                                 Product <span className="text-red-500">*</span>
                               </label>
-                              <select
-                                value={item.productId}
-                                onChange={(e) =>
-                                  handleItemChange(index, "productId", e.target.value)
-                                }
-                                className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm"
-                                required
-                              >
-                                <option value="">Select a product</option>
-                                {item.productId && !getAvailableProducts(index).find(p => p.id === item.productId) && (
-                                  <option value={item.productId}>
-                                    {getProductName(item.productId)}
-                                  </option>
+                              <div className="product-search-container relative">
+                                <div className="relative">
+                                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                  <input
+                                    type="text"
+                                    value={productSearchTerms[index] || (item.productId ? getProductName(item.productId) : "")}
+                                    onChange={(e) => handleProductSearchChange(index, e.target.value)}
+                                    onFocus={() => setShowProductDropdowns(prev => ({ ...prev, [index]: true }))}
+                                    placeholder="Search and select a product..."
+                                    className="w-full rounded-md border border-input bg-white pl-10 pr-10 py-2 text-sm"
+                                    required={!item.productId}
+                                  />
+                                  {productSearchTerms[index] && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setProductSearchTerms(prev => ({ ...prev, [index]: "" }));
+                                        handleItemChange(index, "productId", "");
+                                        setShowProductDropdowns(prev => ({ ...prev, [index]: false }));
+                                      }}
+                                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </div>
+                                {showProductDropdowns[index] && (
+                                  <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                                    {getFilteredProducts(index, productSearchTerms[index] || "").length === 0 ? (
+                                      <div className="px-3 py-2 text-sm text-gray-500">
+                                        No products found
+                                      </div>
+                                    ) : (
+                                      getFilteredProducts(index, productSearchTerms[index] || "").map((product) => (
+                                        <button
+                                          key={product.id}
+                                          type="button"
+                                          onClick={() => handleProductSelect(index, product.id, product.name)}
+                                          className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                                        >
+                                          {product.name}
+                                        </button>
+                                      ))
+                                    )}
+                                  </div>
                                 )}
-                                {getAvailableProducts(index).map((product) => (
-                                  <option key={product.id} value={product.id}>
-                                    {product.name}
-                                  </option>
-                                ))}
-                              </select>
+                              </div>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                               <div>

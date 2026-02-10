@@ -23,9 +23,8 @@ function EditDispatch() {
   const [errorDetails, setErrorDetails] = React.useState([]);
   const { products, refreshProducts } = useUser();
   
-  // Initialize with the original SO items and vehicle number
+  // Initialize with the original SO items
   const originalOrder = location.state?.order;
-  const vehicleNumber = location.state?.vehicleNumber || "";
   const [orderItems, setOrderItems] = React.useState(() => {
     if (originalOrder?.items) {
       return originalOrder.items.map(item => ({
@@ -147,7 +146,6 @@ function EditDispatch() {
           body: JSON.stringify({
             salesOrderId: id,
             items: orderItems,
-            vehicleNumber: vehicleNumber
           }),
           credentials: "include",
         }

@@ -162,6 +162,7 @@ function Dashboard() {
         { name: "Add Product", icon: Plus, href: "/add-product" },
         { name: "Add Category", icon: Tag, href: "/add-category" },
         { name: "View Inventory", icon: Eye, href: "/products" },
+        { name: "Pendency", icon: Layers, href: "/pendency" },
       ],
     },
     {

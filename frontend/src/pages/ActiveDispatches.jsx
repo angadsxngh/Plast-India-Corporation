@@ -9,6 +9,7 @@ function ActiveDispatches() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [dispatchOrders, setDispatchOrders] = React.useState([]);
   const [completingId, setCompletingId] = React.useState(null);
+  const [vehicleNumbers, setVehicleNumbers] = React.useState({});
 
   React.useEffect(() => {
     fetchDispatchOrders();
@@ -51,7 +52,16 @@ function ActiveDispatches() {
     return order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
   };
 
-  const handleMarkAsDispatched = async (dispatchOrderId) => {
+  const handleMarkAsDispatched = async (order) => {
+    const dispatchOrderId = order.id;
+    const enteredVehicleNumber =
+      vehicleNumbers[dispatchOrderId] ?? order.vehicleNumber ?? "";
+
+    if (!enteredVehicleNumber.trim()) {
+      toast.error("Please enter a vehicle number before marking as dispatched");
+      return;
+    }
+
     setCompletingId(dispatchOrderId);
     
     try {
@@ -59,6 +69,12 @@ function ActiveDispatches() {
         `${import.meta.env.VITE_BASE_URL}/complete-dispatch-order/${dispatchOrderId}`,
         {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            vehicleNumber: enteredVehicleNumber.trim(),
+          }),
           credentials: "include",
         }
       );
@@ -455,36 +471,65 @@ function ActiveDispatches() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="mt-4 flex flex-wrap gap-2">
+                {/* Vehicle number + Action Buttons */}
+                <div className="mt-4 space-y-3">
                   {!order.isCompleted && (
-                    <Button
-                      onClick={() => handleMarkAsDispatched(order.id)}
-                      disabled={completingId === order.id}
-                      className="cursor-pointer bg-green-600 hover:bg-green-700"
-                    >
-                      {completingId === order.id ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          <span>Processing...</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          <span>Mark as Dispatched</span>
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <div className="flex-1">
+                        <label
+                          htmlFor={`vehicle-${order.id}`}
+                          className="mb-1 block text-xs font-medium text-gray-600"
+                        >
+                          Vehicle Number <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id={`vehicle-${order.id}`}
+                          type="text"
+                          placeholder="Enter vehicle number (e.g., MH-12-AB-1234)"
+                          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          value={
+                            vehicleNumbers[order.id] ?? order.vehicleNumber ?? ""
+                          }
+                          onChange={(e) =>
+                            setVehicleNumbers((prev) => ({
+                              ...prev,
+                              [order.id]: e.target.value.toUpperCase(),
+                            }))
+                          }
+                        />
+                      </div>
+                      <div className="flex gap-2 sm:mt-5">
+                        <Button
+                          onClick={() => handleMarkAsDispatched(order)}
+                          disabled={completingId === order.id}
+                          className="cursor-pointer bg-green-600 hover:bg-green-700 flex-1"
+                        >
+                          {completingId === order.id ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <span>Processing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              <span>Mark as Dispatched</span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   )}
-                  
-                  <Button
-                    onClick={() => generateReceipt(order)}
-                    variant="outline"
-                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    <span>Print Receipt</span>
-                  </Button>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      onClick={() => generateReceipt(order)}
+                      variant="outline"
+                      className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      <span>Print Receipt</span>
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Show receipt button for completed orders */}

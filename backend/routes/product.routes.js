@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { upload } from '../middlewares/multer.middleware.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
-import { createProduct, updateProduct, deleteProduct, createCategory, addProductToCategory, removeProductFromCategory, getCategories, getProducts, createPurchaseOrder, createSalesOrder, getPurchaseOrders, getSalesOrders, createDispatchOrder, getDispatchOrders, completeDispatchOrder } from '../controllers/product.controller.js';
+import { createProduct, updateProduct, deleteProduct, createCategory, addProductToCategory, removeProductFromCategory, getCategories, getProducts, createPurchaseOrder, createSalesOrder, getPurchaseOrders, getSalesOrders, createDispatchOrder, getDispatchOrders, completeDispatchOrder, getPendency } from '../controllers/product.controller.js';
 
 const router = Router();
 
@@ -20,4 +20,5 @@ router.route('/get-sales-orders').get(verifyJWT, getSalesOrders);
 router.route('/create-dispatch-order').post(verifyJWT, createDispatchOrder);
 router.route('/get-dispatch-orders').get(verifyJWT, getDispatchOrders);
 router.route('/complete-dispatch-order/:id').put(verifyJWT, completeDispatchOrder);
+router.route('/get-pendency').get(verifyJWT, getPendency);
 export default router;
