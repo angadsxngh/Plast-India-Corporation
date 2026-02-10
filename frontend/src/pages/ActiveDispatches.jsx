@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Truck, ArrowLeft, Loader2, Package, FileText, Calendar, CheckCircle, Download, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../utils/api";
 
 function ActiveDispatches() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ function ActiveDispatches() {
   const fetchDispatchOrders = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/get-dispatch-orders`,
+        `${API_BASE_URL}/get-dispatch-orders`,
         {
           credentials: "include",
         }
@@ -66,7 +67,7 @@ function ActiveDispatches() {
     
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/complete-dispatch-order/${dispatchOrderId}`,
+        `${API_BASE_URL}/complete-dispatch-order/${dispatchOrderId}`,
         {
           method: "PUT",
           headers: {

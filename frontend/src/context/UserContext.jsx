@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { API_BASE_URL } from "../utils/api";
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-    const BASE_URL = import.meta.env.VITE_BASE_URL;
+    const BASE_URL = API_BASE_URL;
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 

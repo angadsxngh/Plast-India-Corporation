@@ -23,7 +23,7 @@ app.use(express.static('public'))
 app.use(cookieParser())
 app.use(bodyParser.json())
 
-app.listen(3000, ()=> {
+app.listen(PORT, ()=> {
     console.log("server running on port ",PORT);
 })
 

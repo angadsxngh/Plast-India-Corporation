@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../utils/api";
 import { toast } from "sonner";
 import { useUser } from "@/src/context/UserContext";
 
@@ -64,7 +65,7 @@ function SalesOrder() {
     const loadParties = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/get-parties`,
+          `${API_BASE_URL}/get-parties`,
           {
             credentials: "include",
           }
@@ -155,7 +156,7 @@ function SalesOrder() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/create-sales-order`,
+        `${API_BASE_URL}/create-sales-order`,
         {
           method: "POST",
           headers: {

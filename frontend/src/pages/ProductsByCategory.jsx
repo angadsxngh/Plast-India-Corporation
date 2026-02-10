@@ -8,6 +8,7 @@ import {
   Search,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../utils/api";
 import { toast } from "sonner";
 
 function ProductsByCategory() {
@@ -23,7 +24,7 @@ function ProductsByCategory() {
     const fetchCategories = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/get-categories`,
+          `${API_BASE_URL}/get-categories`,
           {
             method: "GET",
             credentials: "include",
@@ -53,7 +54,7 @@ function ProductsByCategory() {
     try {
       // Fetch all products first
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/get-products`,
+        `${API_BASE_URL}/get-products`,
         {
           method: "GET",
           credentials: "include",

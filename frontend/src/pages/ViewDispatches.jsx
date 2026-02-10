@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Truck, ArrowLeft, Loader2, Package, FileText, AlertCircle, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../utils/api";
 
 function ViewDispatches() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ function ViewDispatches() {
   const fetchSalesOrders = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/get-sales-orders`,
+          `${API_BASE_URL}/get-sales-orders`,
         {
           credentials: "include",
         }
@@ -45,7 +46,7 @@ function ViewDispatches() {
   const fetchDispatchOrders = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/get-dispatch-orders`,
+          `${API_BASE_URL}/get-dispatch-orders`,
         {
           credentials: "include",
         }
@@ -67,7 +68,7 @@ function ViewDispatches() {
   const fetchProducts = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/get-products`,
+          `${API_BASE_URL}/get-products`,
         {
           credentials: "include",
         }
@@ -147,7 +148,7 @@ function ViewDispatches() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/create-dispatch-order`,
+        `${API_BASE_URL}/create-dispatch-order`,
         {
           method: "POST",
           headers: {

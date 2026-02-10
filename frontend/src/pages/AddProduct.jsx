@@ -9,6 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUser } from "@/src/context/UserContext";
+import { API_BASE_URL } from "../utils/api";
 
 function AddProduct() {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ function AddProduct() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/create-product`,
+        `${API_BASE_URL}/create-product`,
         {
           method: "POST",
           headers: {

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Users, ArrowLeft, Loader2, UserPlus, Phone, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../utils/api";
 
 function ViewParties() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ function ViewParties() {
     const fetchParties = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/get-parties`,
+          `${API_BASE_URL}/get-parties`,
           {
             credentials: "include",
           }

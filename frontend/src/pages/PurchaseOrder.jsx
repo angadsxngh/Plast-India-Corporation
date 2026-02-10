@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUser } from "@/src/context/UserContext";
+import { API_BASE_URL } from "../utils/api";
 
 function PurchaseOrder() {
   const navigate = useNavigate();
@@ -104,7 +105,7 @@ function PurchaseOrder() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/create-purchase-order`,
+        `${API_BASE_URL}/create-purchase-order`,
         {
           method: "POST",
           headers: {

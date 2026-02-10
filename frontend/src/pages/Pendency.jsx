@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Layers, Package, AlertCircle, Search, X, Calendar, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../utils/api";
 
 function Pendency() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ function Pendency() {
     const fetchPendency = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/get-pendency`,
+          `${API_BASE_URL}/get-pendency`,
           {
             credentials: "include",
           }

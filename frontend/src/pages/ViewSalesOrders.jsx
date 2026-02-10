@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, ArrowLeft, Loader2, Package, Users, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../utils/api";
 
 function ViewSalesOrders() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ function ViewSalesOrders() {
     const fetchSalesOrders = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/get-sales-orders`,
+          `${API_BASE_URL}/get-sales-orders`,
           {
             credentials: "include",
           }

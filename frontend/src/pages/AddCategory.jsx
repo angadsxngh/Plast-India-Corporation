@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../utils/api";
 
 function AddCategory() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ function AddCategory() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/create-category`,
+        `${API_BASE_URL}/create-category`,
         {
           method: "POST",
           headers: {

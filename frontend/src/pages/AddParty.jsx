@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../utils/api";
 
 function AddParty() {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ function AddParty() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/create-party`,
+        `${API_BASE_URL}/create-party`,
         {
           method: "POST",
           headers: {

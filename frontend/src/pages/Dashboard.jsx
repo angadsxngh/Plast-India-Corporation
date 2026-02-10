@@ -32,6 +32,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useUser } from "../context/UserContext";
+import { API_BASE_URL } from "../utils/api";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -91,7 +92,7 @@ function Dashboard() {
   const handleLogout = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/logout`,
+        `${API_BASE_URL}/logout`,
         {
           method: "GET",
           credentials: "include",

@@ -4,6 +4,7 @@ import { LogIn, Mail, Lock, ArrowLeft, Loader2, KeyRound, Timer } from "lucide-r
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUser } from "../context/UserContext";
+import { API_BASE_URL } from "../utils/api";
 
 function Login() {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ function Login() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/login`, {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -91,7 +92,7 @@ function Login() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/send-login-otp`, {
+      const response = await fetch(`${API_BASE_URL}/send-login-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -119,7 +120,7 @@ function Login() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/login-with-otp`, {
+      const response = await fetch(`${API_BASE_URL}/login-with-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -184,7 +185,7 @@ function Login() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/forgot-password`, {
+      const response = await fetch(`${API_BASE_URL}/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -212,7 +213,7 @@ function Login() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/reset-password`, {
+      const response = await fetch(`${API_BASE_URL}/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

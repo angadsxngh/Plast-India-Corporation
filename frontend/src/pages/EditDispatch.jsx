@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../utils/api";
 import { useUser } from "@/src/context/UserContext";
 
 function EditDispatch() {
@@ -137,7 +138,7 @@ function EditDispatch() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/create-dispatch-order`,
+        `${API_BASE_URL}/create-dispatch-order`,
         {
           method: "POST",
           headers: {
