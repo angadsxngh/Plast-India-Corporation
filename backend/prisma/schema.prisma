@@ -75,7 +75,7 @@ model PurchaseOrderItem {
 model Party {
   id            String       @id @default(auto()) @map("_id") @db.ObjectId
   name          String
-  contactNumber String
+  contactNumber String?
   salesOrders   SalesOrder[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt

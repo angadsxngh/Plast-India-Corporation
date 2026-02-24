@@ -11,6 +11,7 @@ import {
   Package,
   Search,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../utils/api";
@@ -25,6 +26,8 @@ function SalesOrder() {
   const { products, refreshProducts } = useUser();
   const [parties, setParties] = React.useState([]);
   const [selectedPartyId, setSelectedPartyId] = React.useState("");
+  const [partySearchTerm, setPartySearchTerm] = React.useState("");
+  const [isPartyDropdownOpen, setIsPartyDropdownOpen] = React.useState(false);
   
   // Initialize with one empty item
   const [orderItems, setOrderItems] = React.useState([
@@ -179,6 +182,8 @@ function SalesOrder() {
       
       // Reset form
       setSelectedPartyId("");
+      setPartySearchTerm("");
+      setIsPartyDropdownOpen(false);
       setOrderItems([{ productId: "", quantity: 1 }]);
       setProductSearchTerms({});
       setShowProductDropdowns({});
@@ -219,6 +224,71 @@ function SalesOrder() {
       ? parties.find(p => p.id === partyId) 
       : null;
     return party ? party.name : "";
+  };
+
+  // Get display text for selected party
+  const selectedPartyDisplay = React.useMemo(() => {
+    if (!selectedPartyId) return "";
+    return getPartyName(selectedPartyId);
+  }, [selectedPartyId, parties]);
+
+  // Filter parties based on search term
+  const filteredParties = React.useMemo(() => {
+    if (!partySearchTerm.trim()) {
+      // When no search, return all parties sorted by name
+      return [...parties].sort((a, b) => 
+        (a.name || "").localeCompare(b.name || "")
+      );
+    }
+    
+    const term = partySearchTerm.toLowerCase().trim();
+    return parties
+      .filter((party) => {
+        const partyName = (party.name || "").toLowerCase();
+        const contactNumber = (party.contactNumber || "").toLowerCase();
+        return (
+          partyName.includes(term) ||
+          contactNumber.includes(term)
+        );
+      })
+      .sort((a, b) => {
+        // Sort by relevance: exact match first, then starts with, then contains
+        const aName = (a.name || "").toLowerCase();
+        const bName = (b.name || "").toLowerCase();
+        
+        if (aName === term && bName !== term) return -1;
+        if (aName !== term && bName === term) return 1;
+        if (aName.startsWith(term) && !bName.startsWith(term)) return -1;
+        if (!aName.startsWith(term) && bName.startsWith(term)) return 1;
+        
+        // Then sort alphabetically
+        return aName.localeCompare(bName);
+      });
+  }, [parties, partySearchTerm]);
+
+  // Handle party selection
+  const handleSelectParty = (partyId) => {
+    setSelectedPartyId(partyId);
+    setPartySearchTerm("");
+    setIsPartyDropdownOpen(false);
+  };
+
+  // Handle party input change
+  const handlePartyInputChange = (e) => {
+    const value = e.target.value;
+    setPartySearchTerm(value);
+    setIsPartyDropdownOpen(true);
+    // Clear selection if user starts typing
+    if (selectedPartyId) {
+      setSelectedPartyId("");
+    }
+  };
+
+  // Handle party input click - reopen dropdown if closed
+  const handlePartyInputClick = () => {
+    if (!isPartyDropdownOpen) {
+      setIsPartyDropdownOpen(true);
+    }
   };
 
   // Get available products for a specific row (excluding already selected products from other rows)
@@ -269,11 +339,13 @@ function SalesOrder() {
     }));
   };
 
-  // Handle click outside to close dropdown
+  // Handle click outside to close dropdowns
   React.useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.product-search-container')) {
+      if (!event.target.closest('.product-search-container') && 
+          !event.target.closest('.party-search-container')) {
         setShowProductDropdowns({});
+        setIsPartyDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -345,20 +417,75 @@ function SalesOrder() {
                   >
                     Select Party/Client <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    id="party"
-                    value={selectedPartyId}
-                    onChange={(e) => setSelectedPartyId(e.target.value)}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-4 sm:py-3"
-                    required
-                  >
-                    <option value="">Select a party</option>
-                    {parties.map((party) => (
-                      <option key={party.id} value={party.id}>
-                        {party.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="party-search-container relative">
+                    {/* Autocomplete input */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        id="party"
+                        placeholder="Type to search parties..."
+                        value={selectedPartyId ? selectedPartyDisplay : partySearchTerm}
+                        onChange={handlePartyInputChange}
+                        onClick={handlePartyInputClick}
+                        onFocus={() => setIsPartyDropdownOpen(true)}
+                        onBlur={() => {
+                          // Delay closing to allow click events
+                          setTimeout(() => setIsPartyDropdownOpen(false), 200);
+                        }}
+                        className="w-full rounded-md border border-input bg-background pl-10 pr-10 py-2.5 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:py-3"
+                        required={!selectedPartyId}
+                      />
+                      {(partySearchTerm || selectedPartyId) ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPartySearchTerm("");
+                            setSelectedPartyId("");
+                            setIsPartyDropdownOpen(false);
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      ) : (
+                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                      )}
+                    </div>
+                    
+                    {/* Dropdown list */}
+                    {isPartyDropdownOpen && (
+                      <div className="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded-md border border-gray-300 bg-white shadow-lg">
+                        {filteredParties.length === 0 ? (
+                          <div className="px-3 py-2 text-sm text-gray-500">
+                            No parties found
+                          </div>
+                        ) : (
+                          <ul className="py-1">
+                            {filteredParties.map((party) => {
+                              const partyText = `${party.name}${party.contactNumber ? ` - ${party.contactNumber}` : ""}`;
+                              return (
+                                <li
+                                  key={party.id}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault(); // Prevent input blur
+                                    handleSelectParty(party.id);
+                                  }}
+                                  className={`cursor-pointer px-3 py-2 text-sm hover:bg-green-50 ${
+                                    selectedPartyId === party.id
+                                      ? "bg-green-100 font-medium"
+                                      : "text-gray-900"
+                                  }`}
+                                >
+                                  {partyText}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

@@ -12,10 +12,6 @@ const createParty = asyncHandler(async(req, res) => {
         throw new ApiError(400, "Party name is required");
     }
 
-    if(!contactNumber?.trim()){
-        throw new ApiError(400, "Contact number is required");
-    }
-
     // Check if party with same name already exists
     const existingParty = await prisma.party.findFirst({
         where: {
@@ -27,11 +23,18 @@ const createParty = asyncHandler(async(req, res) => {
         throw new ApiError(400, "Party with this name already exists");
     }
 
+    // Build data object - only include contactNumber if provided
+    const partyData = {
+        name: name.trim()
+    };
+    
+    // Only add contactNumber if it's provided and not empty
+    if (contactNumber && contactNumber.trim()) {
+        partyData.contactNumber = contactNumber.trim();
+    }
+    
     const party = await prisma.party.create({
-        data: {
-            name: name.trim(),
-            contactNumber: contactNumber.trim()
-        }
+        data: partyData
     });
 
     return res
