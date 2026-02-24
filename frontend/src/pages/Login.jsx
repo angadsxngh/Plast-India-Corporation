@@ -68,7 +68,14 @@ function Login() {
       
       // Update user context
       if (data && data.id) {
-        login(data);
+        // Store access token for cross-origin requests (fallback if cookies don't work)
+        if (data.accessToken) {
+          localStorage.setItem('accessToken', data.accessToken);
+        }
+        
+        // Remove accessToken from user data before storing
+        const { accessToken, ...userData } = data;
+        login(userData);
         toast.success("Login successful!");
         
         // Clear history and navigate to dashboard
@@ -141,7 +148,14 @@ function Login() {
       
       // Update user context
       if (data && data.id) {
-        login(data);
+        // Store access token for cross-origin requests (fallback if cookies don't work)
+        if (data.accessToken) {
+          localStorage.setItem('accessToken', data.accessToken);
+        }
+        
+        // Remove accessToken from user data before storing
+        const { accessToken, ...userData } = data;
+        login(userData);
         toast.success("Login successful!");
         
         // Clear history and navigate to dashboard

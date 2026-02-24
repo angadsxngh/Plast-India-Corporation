@@ -153,8 +153,12 @@ const loginWithOTP = asyncHandler(async (req, res) => {
     res
       .cookie("refreshToken", refreshToken, options)
       .cookie("accessToken", accessToken, options);
-  
-    return res.send(user);
+
+    // Also return token in response for cross-origin cookie issues
+    return res.json({
+      ...user,
+      accessToken: accessToken
+    });
 });
 
 const loginUser = asyncHandler(async(req, res) => {
@@ -190,7 +194,11 @@ const loginUser = asyncHandler(async(req, res) => {
     .cookie("refreshToken", refreshToken, options)
     .cookie("accessToken", accessToken, options)
     
-    return res.send(user)
+    // Also return token in response for cross-origin cookie issues
+    return res.json({
+      ...user,
+      accessToken: accessToken
+    });
 })
 
 const sendPasswordResetOTP = asyncHandler(async (req, res) => {

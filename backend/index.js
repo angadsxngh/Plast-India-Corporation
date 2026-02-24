@@ -14,8 +14,28 @@ const app = express();
 const PORT=process.env.PORT || 3000;
 
 app.use(cors({
-    origin: ["http://localhost:5173", "https://plast-india-corporation-l9qz.vercel.app"],
-    credentials:true,   
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        const allowedOrigins = [
+            "http://localhost:5173",
+            "https://plast-india-corporation-l9qz.vercel.app",
+        ];
+        
+        // Check if origin is a Vercel deployment
+        if (origin.includes("vercel.app")) {
+            return callback(null, true);
+        }
+        
+        // Check if origin is in allowed list
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            return callback(null, true);
+        }
+        
+        callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,   
 }))
 app.use(express.json({limit: "16kb"}))
 app.use(express.urlencoded({extended: true, limit: '16kb'}))
@@ -23,8 +43,17 @@ app.use(express.static('public'))
 app.use(cookieParser())
 app.use(bodyParser.json())
 
+// Add request logging middleware
+app.use((req, res, next) => {
+    console.log(`[REQUEST] ${new Date().toISOString()} - ${req.method} ${req.path}`);
+    console.log(`[REQUEST] Origin: ${req.headers.origin || 'No origin'}`);
+    console.log(`[REQUEST] Cookies: ${req.cookies ? Object.keys(req.cookies).join(', ') : 'No cookies'}`);
+    next();
+});
+
 app.listen(PORT, ()=> {
     console.log("server running on port ",PORT);
+    console.log("Environment:", process.env.NODE_ENV || "development");
 })
 
 app.get('/', (req,res) => {
@@ -40,11 +69,24 @@ app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || "Internal Server Error";
     
+    // Log error details for debugging
+    console.error("[ERROR HANDLER] ========================================");
+    console.error("[ERROR HANDLER] Status Code:", statusCode);
+    console.error("[ERROR HANDLER] Message:", message);
+    console.error("[ERROR HANDLER] Error Name:", err?.name);
+    console.error("[ERROR HANDLER] Error Stack:", err?.stack);
+    console.error("[ERROR HANDLER] Request Path:", req.path);
+    console.error("[ERROR HANDLER] Request Method:", req.method);
+    console.error("[ERROR HANDLER] Request Body:", req.body);
+    console.error("[ERROR HANDLER] ========================================");
+    
     res.status(statusCode).json({
         success: false,
         statusCode,
         message,
-        errors: err.errors || []
+        errors: err.errors || [],
+        // Include stack trace in development (remove in production if needed)
+        ...(process.env.NODE_ENV !== 'production' && { stack: err?.stack })
     });
 });
 

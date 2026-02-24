@@ -3,39 +3,70 @@ import { Button } from "@/components/ui/button";
 import { Users, ArrowLeft, Loader2, UserPlus, Phone, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { API_BASE_URL } from "../utils/api";
+import { API_BASE_URL, authenticatedFetch } from "../utils/api";
+import { useUser } from "@/src/context/UserContext";
 
 function ViewParties() {
   const navigate = useNavigate();
+  const { user, isLoading: userLoading } = useUser();
   const [isLoading, setIsLoading] = React.useState(true);
   const [parties, setParties] = React.useState([]);
 
   React.useEffect(() => {
+    // Wait for user authentication check to complete
+    if (userLoading) return;
+    
+    // Redirect to login if not authenticated
+    if (!user) {
+      toast.error("Please login to view parties");
+      navigate("/login");
+      return;
+    }
+
     const fetchParties = async () => {
       try {
-        const response = await fetch(
+        console.log("Fetching parties from:", `${API_BASE_URL}/get-parties`);
+        const response = await authenticatedFetch(
           `${API_BASE_URL}/get-parties`,
           {
-            credentials: "include",
+            method: "GET",
           }
         );
 
+        console.log("Response status:", response.status);
+        console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+        
         if (!response.ok) {
-          throw new Error("Failed to fetch parties");
+          // Handle 401 specifically
+          if (response.status === 401) {
+            toast.error("Session expired. Please login again.");
+            navigate("/login");
+            return;
+          }
+          
+          const errorText = await response.text();
+          console.error("Failed to fetch parties:", response.status, errorText);
+          throw new Error(`Failed to fetch parties: ${response.status}`);
         }
 
         const result = await response.json();
+        console.log("Parties fetched:", result.data?.length || 0);
         setParties(result.data || []);
       } catch (error) {
         console.error("Error fetching parties:", error);
-        toast.error("Failed to load parties");
+        if (error.message.includes("401") || error.message.includes("Unauthorized")) {
+          toast.error("Session expired. Please login again.");
+          navigate("/login");
+        } else {
+          toast.error(`Failed to load parties: ${error.message}`);
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchParties();
-  }, []);
+  }, [user, userLoading, navigate]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -81,7 +112,7 @@ function ViewParties() {
 
       {/* Content */}
       <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 lg:px-8">
-        {isLoading ? (
+        {userLoading || isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
             <span className="ml-3 text-sm text-gray-500">
@@ -122,10 +153,12 @@ function ViewParties() {
                         <h3 className="text-lg font-semibold text-gray-900">
                           {party.name}
                         </h3>
-                        <div className="mt-1 flex items-center gap-1 text-sm text-gray-500">
-                          <Phone className="h-3.5 w-3.5" />
-                          {party.contactNumber}
-                        </div>
+                        {party.contactNumber && (
+                          <div className="mt-1 flex items-center gap-1 text-sm text-gray-500">
+                            <Phone className="h-3.5 w-3.5" />
+                            {party.contactNumber}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

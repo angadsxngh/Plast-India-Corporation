@@ -100,6 +100,7 @@ function Dashboard() {
       );
       
       // Clear user state and localStorage regardless of response
+      localStorage.removeItem('accessToken');
       logout();
       
       // Navigate to login page

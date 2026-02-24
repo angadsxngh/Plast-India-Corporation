@@ -10,6 +10,12 @@ import {
 
 const router = Router();
 
+// Add route-level logging middleware
+router.use((req, res, next) => {
+    console.log(`[PARTY ROUTES] ${req.method} ${req.path}`);
+    next();
+});
+
 router.route('/create-party').post(verifyJWT, createParty);
 router.route('/get-parties').get(verifyJWT, getParties);
 router.route('/get-party/:id').get(verifyJWT, getPartyById);
