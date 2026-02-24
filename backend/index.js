@@ -10,6 +10,32 @@ import partyRouter from './routes/party.routes.js';
 
 const prisma = new PrismaClient()
 
+// Verify Prisma client is generated and test connection
+async function initializePrisma() {
+    try {
+        console.log("[INIT] Testing Prisma connection...");
+        await prisma.$connect();
+        console.log("[INIT] Prisma connected successfully");
+        
+        // Test query to verify schema is in sync
+        try {
+            const testParty = await prisma.party.findFirst({
+                select: { id: true, name: true, contactNumber: true }
+            });
+            console.log("[INIT] Prisma schema test successful");
+        } catch (schemaError) {
+            console.error("[INIT] WARNING: Prisma schema may be out of sync!");
+            console.error("[INIT] Schema error:", schemaError.message);
+            console.error("[INIT] Please run: npx prisma generate && npx prisma db push");
+        }
+    } catch (error) {
+        console.error("[INIT] Prisma connection failed:", error);
+        process.exit(1);
+    }
+}
+
+initializePrisma();
+
 const app = express();
 const PORT=process.env.PORT || 3000;
 
